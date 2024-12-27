@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Anagram Game</title>
+    <style>
+        body {
+            background-image:url(background.jpg) ;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            margin: 50px auto;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: white;
+        }
+
+        .game-area {
+            background: #8f8e8ed5;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            
+        }
+
+        .scrambled-word {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1em;
+            width: 80%;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: red;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: rgb(201, 0, 0);
+        }
+
+        .feedback {
+            font-size: 1.2em;
+            margin-top: 10px;
+            height: 20px;
+            color: #e74c3c;
+        }
+
+        .game-stats p {
+            font-size: 1.1em;
+            margin: 22px 0;
+            color: white;
+        }
+
+        #restart-button {
+            margin-top: 20px;
+            background-color: #2ecc71;
+        }
+
+        #restart-button:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="game-area">
+            <div id="scrambled-word" class="scrambled-word">--</div>
+            <input type="text" id="user-input" placeholder="Enter your guess..." />
+            <button id="submit-button">Submit</button>
+            <button id="hint-button">Hint</button>
+            <div id="feedback" class="feedback"></div>
+            <div class="game-stats">
+                <p>Score: <span id="score">0</span></p>
+                <p>Time Left: <span id="timer">60</span> seconds</p>
+            </div>
+        </div>
+        <button id="restart-button" style="display: none;">Restart Game</button>
+    </div>
+    <script>
+        const words = [
+            { word: "NARUTO", hint: "young ninja who seeks recognition from his peers and dreams of becoming the leader of his village" },
+            { word: "ONE PIECE", hint: "A pirate's adventure to find the ultimate treasure" },
+            { word: "DEATH NOTE", hint: "a story about a high school student who finds a notebook that gives him the power to kill anyone by writing their name in it" },
+            { word: "DRAGON BALL", hint: "A series that follows the main protagonist from his childhood through adulthood as he trains in martial arts" },
+            { word: "SAILOR MOON", hint: "Magical girls protect Earth from evil forces" },
+            { word: "TOKYO GHOUL", hint: "A show with beings who look like humans but can only survive by eating human flesh" },
+            { word: "JUJUTSU KAISEN", hint: "A world where sorcerers recruited to exorcise curses." },
+            { word: "SPY X FAMILY", hint: "A spy forms a fake family" },
+            { word: "ATTACK ON TITAN", hint: "Humanity fights against giant man-eating creatures." },
+            { word: "BLEACH", hint: "A high school student with the ability to see ghost." },
+            { word: "MY HERO ACADEMIA", hint: "A superhero-admiring boy enrolls in a prestigious hero academy and learns what it really means to be a hero." },
+            { word: "BLACK CLOVER", hint: "Two orphans who were abandoned at a church and raised as brothers." },
+            { word: "FAIRY TAIL", hint: "A series that follows the adventures of a celestial spirit mage as she joins a guild of wizards." },
+            { word: "DEMON SLAYER", hint: "A boy slays demons to avenge his family and save his sister." },
+            { word: "HUNTER X HUNTER", hint: "A boy starts his on a journey of becoming a hunter to find his father." },
+            { word: "FULLMETAL ALCHEMIST", hint: "Two brothers seek the Philosopher's Stone after a forbidden alchemy ritual." },
+            { word: "ONE PUNCH MAN", hint: "A hero defeats any enemy with a single punch while struggling with boredom." },
+            { word: "NARUTO SHIPPUDEN", hint: "A mysterious organization causes our young ninja to train harder for the dangers outside the village." },
+            { word: "INUYASHA", hint: "A modern girl teams up with a half-demon to collect sacred shards." },
+            { word: "ERASED", hint: "A man travels back in time to prevent tragic events." },
+            { word: "RE:ZERO", hint: "A man repeatedly relives his life to save those he cares about." },
+            { word: "STEINS GATE", hint: "A group of friends accidentally discovers time travel." },
+            { word: "COWBOY BEBOP", hint: "A bounty-hunting crew travels across space in the future." },
+            { word: "CODE GEASS", hint: "A boy gains a mysterious power and leads a rebellion against an empire." },
+            { word: "CLANNAD", hint: "A high school boy's life changes after meeting a strange girl." },
+            { word: "TRIGUN", hint: "A pacifist gunslinger with a huge bounty survives on a desert planet." },
+            { word: "AKIRA", hint: "Biker gangs and psychic powers collide in a dystopian Neo-Tokyo." },
+            { word: "PARASYTE", hint: "A boy fights against parasitic aliens that take over human bodies." },
+            { word: "THE PROMISED NEVERLAND", hint: "Children uncover a dark secret in their orphanage." },
+            { word: "TORADORA", hint: "A story of love and friendship between unlikely companions." },
+            { word: "YOUR NAME", hint: "Two strangers mysteriously swap bodies and try to meet." },
+            { word: "VIOLET EVERGARDEN", hint: "A former soldier searches for the meaning of love after war." },
+            { word: "SAO", hint: "Players are trapped in a VR game where death in the game means death in real life." },
+            { word: "DR STONE", hint: "Humanity is petrified, and a genius revives to rebuild civilization." },
+            { word: "YU YU HAKUSHO", hint: "A teenage delinquent becomes a Spirit Detective for the underworld." },
+            { word: "FOOD WARS", hint: "A boy competes in high-stakes cooking battles at an elite academy." },
+            { word: "BLUE EXORCIST", hint: "The son of Satan trains to fight demons and prove himself." },
+            { word: "FIRE FORCE", hint: "Special firefighters fight mysterious infernals in a fiery apocalypse." }
+
+        ];
+
+
+        let currentWord = "";
+        let scrambledWord = "";
+        let hint = "";
+        let score = 0;
+        let timeLeft = 60;
+        let timer;
+        let hintUsed = false;
+
+        function scramble(word) {
+            const chars = word.split('');
+            const letters = chars.filter(char => char !== ' ');
+            for (let i = letters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+            let index = 0;
+            return chars.map(char => (char === ' ' ? ' ' : letters[index++])).join('');
+        }
+
+        function startGame() {
+            resetGame();
+            pickWord();
+            updateScore();
+            startTimer();
+        }
+
+        function pickWord() {
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentWord = words[randomIndex].word;
+            hint = words[randomIndex].hint;
+            scrambledWord = scramble(currentWord);
+            hintUsed = false;
+            document.getElementById('scrambled-word').innerText = scrambledWord;
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function checkInput() {
+            const userInput = document.getElementById('user-input').value.toUpperCase();
+            if (userInput === currentWord) {
+                const points = hintUsed ? 5 : 10;
+                score += points;
+                if (!hintUsed) {
+                    timeLeft += 5; 
+                }
+                displayFeedback(`Correct! +${points} Points`, "green");
+                pickWord();
+                updateScore();
+                document.getElementById('user-input').value = "";
+            } else {
+                displayFeedback("Try Again!", "red");
+            }
+        }
+
+        document.getElementById('submit-button').addEventListener('click', checkInput);
+
+        document.getElementById('user-input').addEventListener('keyup', (event) => {
+            if (event.key === "Enter") {
+                checkInput();
+            }
+        });
+
+        document.getElementById('hint-button').addEventListener('click', () => {
+            displayFeedback(`Hint: ${hint}`, "black");
+            hintUsed = true; 
+        });
+
+        function updateScore() {
+            document.getElementById('score').innerText = score;
+        }
+
+        function displayFeedback(message, color) {
+            const feedback = document.getElementById('feedback');
+            feedback.innerText = message;
+            feedback.style.color = color;
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            displayFeedback(`Game Over! Final Score: ${score}`, "black");
+            document.getElementById('restart-button').style.display = "block";
+        }
+
+        document.getElementById('restart-button').addEventListener('click', () => {
+            startGame();
+            document.getElementById('restart-button').style.display = "none";
+        });
+
+        function resetGame() {
+            score = 0;
+            timeLeft = 60;
+            currentWord = "";
+            scrambledWord = "";
+            hintUsed = false;
+            document.getElementById('user-input').value = "";
+            document.getElementById('timer').innerText = timeLeft;
+            document.getElementById('feedback').innerText = "";
+        }
+
+        startGame();
+    </script>
+</body>
+</html>
